@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect
+from flask import Flask, request, jsonify, redirect, session
 from flask_cors import CORS
 from db import init_db, get_db_connection
 
@@ -73,7 +73,9 @@ def login():
 
     if user:
         return jsonify({
-            "message": "Login successful"
+            "message": "Login successful",
+            "userid": user["userid"]
+            
         }), 200
 
     else:
@@ -99,7 +101,6 @@ def generate_short_code():
 # -------------------------
 @app.route("/shorten", methods=["POST"])
 def shorten_url():
-
     data = request.get_json()
 
     long_url = data.get("long_url")
@@ -109,38 +110,46 @@ def shorten_url():
     short_url = f"http://127.0.0.1:5000/{short_code}"
 
     conn = get_db_connection()
+
     cursor = conn.cursor()
+    user_id = data.get("user_id")
 
     cursor.execute(
         """
         INSERT INTO shorturl
-        (long_url, short_code, short_url)
-        VALUES (%s, %s, %s)
+        (user_id, long_url, short_code, short_url)
+        VALUES (%s,%s, %s, %s)
         """,
-        (long_url, short_code, short_url)
+        (
+            user_id,
+            long_url,
+            short_code,
+            short_url
+        )
     )
 
     conn.commit()
+
     conn.close()
 
     return jsonify({
-        "short_code": short_code,
-        "short_url": short_url
+        "short_url": short_url,
+        "short_code": short_code
     }), 200
-
 
 # -------------------------
 # GET ALL URLS
 # -------------------------
-@app.route("/my-urls", methods=["GET"])
-def get_user_urls():
+@app.route("/my-urls/<int:userid>", methods=["GET"])
+def get_user_urls(userid):
 
     conn = get_db_connection()
 
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute(
-        "SELECT * FROM shorturl"
+        "SELECT * FROM shorturl WHERE user_id = %s",
+        (userid,)
     )
 
     urls = cursor.fetchall()
@@ -148,7 +157,6 @@ def get_user_urls():
     conn.close()
 
     return jsonify(urls), 200
-
 
 # -------------------------
 # REDIRECT SHORT URL

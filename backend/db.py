@@ -39,11 +39,19 @@ def init_db():
     """)
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS shorturl (
-            userid INT AUTO_INCREMENT PRIMARY KEY,
-            long_url VARCHAR(100) NOT NULL,
-            short_code VARCHAR(10) NOT NULL,
-            short_url VARCHAR(100) NOT NULL
+    CREATE TABLE IF NOT EXISTS shorturl (
+
+        id INT AUTO_INCREMENT PRIMARY KEY,
+
+        user_id INT,
+
+        long_url VARCHAR(255) NOT NULL,
+        short_code VARCHAR(10) NOT NULL,
+        short_url VARCHAR(255) NOT NULL,
+
+        FOREIGN KEY (user_id)
+        REFERENCES users(userid)
+        ON DELETE CASCADE
         )
     """)
 

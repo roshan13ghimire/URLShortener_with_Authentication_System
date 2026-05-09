@@ -10,22 +10,19 @@ function Dashboard() {
   // FETCH ALL URLS
   // -------------------------
   const fetchUrls = async () => {
+  try {
+    const userid = localStorage.getItem("userid");
 
-    try {
+    const res = await axios.get(
+      `http://localhost:5000/my-urls/${userid}`
+    );
 
-      const res = await axios.get(
-        "http://127.0.0.1:5000/my-urls"
-      );
+    setUrls(res.data);
 
-      setUrls(res.data);
-
-    } catch (error) {
-
-      console.log(error);
-      alert("Failed to fetch URLs");
-
-    }
-  };
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   // load URLs when page opens
   useEffect(() => {
@@ -40,11 +37,13 @@ function Dashboard() {
   const handleShorten = async () => {
 
     try {
+      const userid = localStorage.getItem("userid");
 
       await axios.post(
         "http://127.0.0.1:5000/shorten",
         {
-          long_url: longUrl
+          long_url: longUrl,
+          user_id: userid
         }
       );
 

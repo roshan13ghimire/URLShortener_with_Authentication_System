@@ -18,6 +18,7 @@ function Login() {
         }
       );
 
+      localStorage.setItem("userid", res.data.userid);
       alert(res.data.message);
 
       // move to dashboard
