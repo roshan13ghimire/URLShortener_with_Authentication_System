@@ -34,7 +34,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             userid INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
-            password VARCHAR(20) NOT NULL
+            password VARCHAR(100) NOT NULL
         )
     """)
 

@@ -9,3 +9,5 @@ npm create vite@latest //installing react for frontend
 npm run dev  //running the app
 
 npm install axios react-router-dom  //installing libraries
+
+pip install bcrypt // bcrypt for storing password in secure way

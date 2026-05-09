@@ -1,8 +1,9 @@
 import { useState } from "react";
-import axios from "axios";
+import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 function Signup() {
+
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -10,54 +11,105 @@ function Signup() {
 
   const handleSignup = async () => {
     try {
-      const res = await axios.post(
-        "http://127.0.0.1:5000/signup",
-        {
-          name,
-          password,
-        }
-      );
+
+      const res = await API.post("/signup", {
+        name,
+        password
+      });
 
       alert(res.data.message);
 
-      // go to login page
       navigate("/");
+
     } catch (error) {
-      console.log(error);
       alert("Signup failed");
     }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Signup</h1>
+    <div style={styles.container}>
 
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      <div style={styles.card}>
 
-      <br /><br />
+        <h2 style={styles.title}>Signup</h2>
 
+        <input
+          style={styles.input}
+          placeholder="Username"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
+        <input
+          style={styles.input}
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
+        <button style={styles.button} onClick={handleSignup}>
+          Signup
+        </button>
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <p style={styles.link} onClick={() => navigate("/")}>
+          Already have an account? Login
+        </p>
 
-      <br /><br />
+      </div>
 
-      <button onClick={handleSignup}>
-        Signup
-      </button>
     </div>
   );
 }
+
+const styles = {
+
+  container: {
+    height: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f4f6f8"
+  },
+
+  card: {
+    width: "320px",
+    padding: "25px",
+    borderRadius: "12px",
+    backgroundColor: "white",
+    boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+    textAlign: "center"
+  },
+
+  title: {
+    marginBottom: "20px"
+  },
+
+  input: {
+    width: "100%",
+    padding: "12px",
+    marginBottom: "12px",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+    outline: "none"
+  },
+
+  button: {
+    width: "100%",
+    padding: "12px",
+    border: "none",
+    borderRadius: "8px",
+    backgroundColor: "#4f46e5",
+    color: "white",
+    cursor: "pointer"
+  },
+
+  link: {
+    marginTop: "10px",
+    fontSize: "13px",
+    color: "#4f46e5",
+    cursor: "pointer"
+  }
+};
 
 export default Signup;

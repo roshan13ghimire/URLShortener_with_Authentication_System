@@ -1,135 +1,168 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../services/api";
+import Navbar from "../components/Navbar";
 
 function Dashboard() {
 
-  const [longUrl, setLongUrl] = useState("");
   const [urls, setUrls] = useState([]);
+  const [longUrl, setLongUrl] = useState("");
 
-  // -------------------------
-  // FETCH ALL URLS
-  // -------------------------
+  const userid = localStorage.getItem("userid");
+
+  // fetch urls
   const fetchUrls = async () => {
-  try {
-    const userid = localStorage.getItem("userid");
-
-    const res = await axios.get(
-      `http://localhost:5000/my-urls/${userid}`
-    );
-
-    setUrls(res.data);
-
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-  // load URLs when page opens
-  useEffect(() => {
-
-    fetchUrls();
-
-  }, []);
-
-  // -------------------------
-  // SHORTEN URL
-  // -------------------------
-  const handleShorten = async () => {
-
     try {
-      const userid = localStorage.getItem("userid");
-
-      await axios.post(
-        "http://127.0.0.1:5000/shorten",
-        {
-          long_url: longUrl,
-          user_id: userid
-        }
-      );
-
-      // clear input
-      setLongUrl("");
-
-      // refresh URL list
-      fetchUrls();
-
+      const res = await API.get(`/my-urls/${userid}`);
+      setUrls(res.data);
     } catch (error) {
-
       console.log(error);
-      alert("Failed to shorten URL");
-
     }
   };
 
+  useEffect(() => {
+    fetchUrls();
+  }, []);
+
+  // shorten url
+  const handleShorten = async () => {
+    try {
+
+      if (!longUrl) {
+        alert("Please enter a URL");
+        return;
+      }
+
+      await API.post("/shorten", {
+        long_url: longUrl,
+        user_id: userid
+      });
+
+      setLongUrl("");
+      fetchUrls();
+
+    } catch (error) {
+      console.log(error);
+      alert("Failed to shorten URL");
+    }
+  };
+
+  // copy to clipboard
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert("Copied!");
+  };
+
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
 
-      <h1>Dashboard</h1>
+      <Navbar />
 
-      {/* INPUT */}
-      <input
-        type="text"
-        placeholder="Enter long URL"
-        value={longUrl}
-        onChange={(e) => setLongUrl(e.target.value)}
-        style={{
-          width: "300px",
-          padding: "10px"
-        }}
-      />
+      <div style={styles.container}>
 
-      <button
-        onClick={handleShorten}
-        style={{
-          marginLeft: "10px",
-          padding: "10px"
-        }}
-      >
-        Shorten
-      </button>
+        <h1 style={styles.title}>My URL Dashboard</h1>
 
-      <hr />
+        {/* SHORTEN FORM */}
+        <div style={styles.form}>
 
-      <h2>My URLs</h2>
+          <input
+            type="text"
+            placeholder="Enter long URL"
+            value={longUrl}
+            onChange={(e) => setLongUrl(e.target.value)}
+            style={styles.input}
+          />
 
-      {/* URL LIST */}
-      {urls.map((url) => (
-
-        <div
-          key={url.short_code}
-          style={{
-            border: "1px solid gray",
-            padding: "15px",
-            marginBottom: "15px"
-          }}
-        >
-
-          <p>
-            <strong>Long URL:</strong>
-            <br />
-            {url.long_url}
-          </p>
-
-          <p>
-            <strong>Short URL:</strong>
-            <br />
-
-            <a
-              href={url.short_url}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {url.short_url}
-            </a>
-
-          </p>
+          <button onClick={handleShorten} style={styles.button}>
+            Shorten
+          </button>
 
         </div>
 
-      ))}
+        {/* URL LIST */}
+        <div style={styles.grid}>
 
+          {urls.length === 0 ? (
+            <p>No URLs found</p>
+          ) : (
+            urls.map((url) => (
+              <div
+                key={url.id || url.short_code}
+                style={styles.card}
+              >
+
+                <p><b>Long URL:</b></p>
+                <p style={styles.text}>{url.long_url}</p>
+
+                <p><b>Short URL:</b></p>
+                <a href={url.short_url} target="_blank">
+                  {url.short_url}
+                </a>
+
+                <br /><br />
+
+                <button
+                  onClick={() => copyToClipboard(url.short_url)}
+                  style={styles.button}
+                >
+                  Copy
+                </button>
+
+              </div>
+            ))
+          )}
+
+        </div>
+
+      </div>
     </div>
   );
 }
+
+const styles = {
+
+  container: {
+    padding: "20px",
+    fontFamily: "Arial"
+  },
+
+  title: {
+    textAlign: "center"
+  },
+
+  form: {
+    display: "flex",
+    gap: "10px",
+    justifyContent: "center",
+    marginTop: "20px"
+  },
+
+  input: {
+    padding: "10px",
+    width: "300px"
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "15px",
+    marginTop: "30px"
+  },
+
+  card: {
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    padding: "15px",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+  },
+
+  text: {
+    wordBreak: "break-word"
+  },
+
+  button: {
+    padding: "8px 12px",
+    cursor: "pointer"
+  }
+};
 
 export default Dashboard;
